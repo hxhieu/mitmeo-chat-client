@@ -1,9 +1,9 @@
 @charset "utf-8";
 
 // Import a Google Font
-@import url('https://fonts.googleapis.com/css?family=Nunito:400,700');
+@import url('https://fonts.googleapis.com/css2?family=Itim&display=swap');
 // Update Bulma's global variables
-$family-sans-serif: 'Nunito', sans-serif;
+$family-sans-serif: 'Itim', sans-serif;
 
 @import './variables';
 
@@ -17,3 +17,5 @@ $family-sans-serif: 'Nunito', sans-serif;
 @import '~bulma/sass/components/navbar.sass';
 @import '~bulma/sass/layout/hero.sass';
 @import '~bulma/sass/layout/section.sass';
+
+@import './layout';
