@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.15.1",
+    "@google-cloud/translate": "^6.0.3",
     "bulma": "^0.9.1",
     "core-js": "^3.6.5",
     "register-service-worker": "^1.7.1",
