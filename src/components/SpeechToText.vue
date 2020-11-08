@@ -8,19 +8,6 @@
       <li v-for="(text, idx) in results" :key="idx" class="text-me">
         {{ text }}
       </li>
-      <!-- <li class="text-other">
-        Chịu sao thấu híc híc
-      </li>
-      <li class="text-me">
-        Say that you like you use faUser icon of both the kind regular and
-        solid, then do this change
-      </li>
-      <li class="text-other">
-        Chịu sao thấu híc híc
-      </li>
-      <li class="text-me">
-        I had the same issue and the solution was to follow the official docs.
-      </li> -->
     </ul>
   </div>
 </template>
