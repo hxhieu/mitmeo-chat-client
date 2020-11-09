@@ -5,8 +5,12 @@
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.15.1",
     "@google-cloud/translate": "^6.0.3",
+    "@types/hark": "^1.2.1",
+    "@types/recordrtc": "^5.6.2",
     "bulma": "^0.9.1",
     "core-js": "^3.6.5",
+    "hark": "^1.2.3",
+    "recordrtc": "^5.6.1",
     "register-service-worker": "^1.7.1",
     "twilio-video": "^2.7.3",
     "vue": "^3.0.0",
@@ -57,8 +61,8 @@
   "scripts": {
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "serve": "cross-env VUE_APP_TWILIO=VUE_APP_TWILIO_JWT1 vue-cli-service serve --https",
-    "serve:two": "cross-env VUE_APP_TWILIO=VUE_APP_TWILIO_JWT2 vue-cli-service serve --https",
+    "serve": "cross-env VUE_APP_TWILIO=VUE_APP_TWILIO_JWT1 vue-cli-service serve",
+    "serve:two": "cross-env VUE_APP_TWILIO=VUE_APP_TWILIO_JWT2 vue-cli-service serve",
     "test:e2e": "vue-cli-service test:e2e",
     "test:unit": "vue-cli-service test:unit"
   }

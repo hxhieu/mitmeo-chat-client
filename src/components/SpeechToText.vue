@@ -1,6 +1,6 @@
 <template>
   <div class="speech-to-text">
-    <span :class="open ? 'icon active' : 'icon'" @click="handleClick">
+    <span :class="open ? 'icon active' : 'icon'" @click="open = !open">
       <i v-if="!open" class="fas fa-microphone-slash"></i>
       <i v-else class="fas fa-microphone"></i>
     </span>
@@ -9,61 +9,115 @@
         {{ text }}
       </li>
     </ul>
+    <audio ref="testRecording" controls autoplay playsinline></audio>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted } from 'vue'
+import { defineComponent, ref, onMounted, watch, watchEffect } from 'vue'
 import { v2 as GoogleTranslate } from '@google-cloud/translate'
+import RecordRTC, { Options, StereoAudioRecorder } from 'recordrtc'
+import hark from 'hark'
 
-const SpeechRecognition =
-  window.SpeechRecognition || (window as any).webkitSpeechRecognition
-const SpeechGrammarList =
-  window.SpeechGrammarList || (window as any).webkitSpeechGrammarList
-const SpeechRecognitionEvent =
-  window.SpeechRecognitionEvent || (window as any).webkitSpeechRecognitionEvent
+const isEdge =
+  navigator.userAgent.indexOf('Edge') !== -1 &&
+  (!!navigator.msSaveOrOpenBlob || !!navigator.msSaveBlob)
+const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+
+let recorder: RecordRTC | null
 
 export default defineComponent({
   name: 'SpeechToText',
   setup() {
     const open = ref(false)
     const results = ref<string[]>([])
-
-    const recognition = new SpeechRecognition()
-    recognition.continuous = true
-    recognition.lang = 'en-NZ'
-    recognition.interimResults = false
-    recognition.maxAlternatives = 1
-
-    const handleClick = () => {
-      open.value = !open.value
-      if (open.value) {
-        recognition.start()
-      } else {
-        recognition.stop()
-      }
-    }
+    const testRecording = ref<HTMLAudioElement>()
 
     onMounted(() => {
       const translate = new GoogleTranslate.Translate({
         key: process.env.VUE_APP_GOOGLE_API_KEY,
       })
-      recognition.onresult = event => {
-        const latest = event.results[results.value.length]
-        const transcript = latest[0].transcript
-        translate.translate(transcript, 'vi').then(translations => {
-          const trans = Array.isArray(translations)
-            ? translations
-            : [translations]
-          results.value.push(trans[0])
-        })
+
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        alert('This browser does not supports WebRTC getUserMedia API.')
       }
+
+      navigator.mediaDevices
+        .getUserMedia({
+          audio: isEdge
+            ? true
+            : {
+                echoCancellation: false,
+              },
+        })
+        .then(stream => {
+          const options: Options = {
+            type: 'audio',
+            numberOfAudioChannels: isEdge ? 1 : 2,
+            checkForInactiveTracks: true,
+            bufferSize: 16384,
+          }
+
+          if (isSafari || isEdge) {
+            options.recorderType = StereoAudioRecorder
+          }
+
+          if (
+            navigator.platform &&
+            navigator.platform
+              .toString()
+              .toLowerCase()
+              .indexOf('win') === -1
+          ) {
+            options.sampleRate = 48000 // or 44100 or remove this line for default
+          }
+
+          if (isSafari) {
+            options.sampleRate = 44100
+            options.bufferSize = 4096
+            options.numberOfAudioChannels = 2
+          }
+
+          if (recorder) {
+            recorder.destroy()
+            recorder = null
+          }
+          recorder = new RecordRTC(stream, options)
+          const speechEvents = hark(stream)
+          speechEvents.on('speaking', () => {
+            console.log('speaking')
+          })
+          speechEvents.on('stopped_speaking', () => {
+            console.log('stop speaking')
+          })
+        })
+        .catch(error => {
+          alert('Unable to capture your microphone. Please check console logs.')
+          console.error(error)
+        })
     })
+
+    watch(
+      () => open.value,
+      isOpen => {
+        console.log(isOpen)
+        if (isOpen) {
+          recorder?.startRecording()
+        } else {
+          recorder?.stopRecording(() => {
+            const blob = recorder?.getBlob()
+            if (testRecording.value && blob) {
+              testRecording.value.src = URL.createObjectURL(blob)
+            }
+          })
+        }
+      },
+    )
 
     return {
       open,
-      handleClick,
       results,
+      testRecording,
     }
   },
 })
